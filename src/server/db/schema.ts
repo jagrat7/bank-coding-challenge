@@ -37,6 +37,21 @@ export const posts = createTable(
   })
 );
 
+export type ProcessStage = 'uploaded' | 'processing' | 'completed' | 'failed'
+
+export const statement = createTable(
+  "statement",
+  {
+    id: int("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+    userId: text("user_id", { length: 255 }).notNull(),
+    content: text("content").notNull(),
+    processStage: text("process_stage", { enum: ['uploaded', 'processing', 'completed', 'failed'] }).default('uploaded').notNull(),
+    createdAt: int("created_at", { mode: "timestamp" })
+      .default(sql`(unixepoch())`)
+      .notNull(),
+  },
+);
+
 export const users = createTable("user", {
   id: text("id", { length: 255 })
     .notNull()

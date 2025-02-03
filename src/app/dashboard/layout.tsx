@@ -1,6 +1,7 @@
 import { Button } from "~/app/_components/ui/button"
 import Link from "next/link"
 import { auth } from "~/server/auth"
+import { redirect } from "next/navigation"
 
 export default async function DashboardLayout({
   children,
@@ -8,7 +9,7 @@ export default async function DashboardLayout({
   children: React.ReactNode
 }) {
   const session = await auth()
-
+  if (!session) redirect("/")
   return (
     <div className="min-h-screen">
       <header className="border-b">

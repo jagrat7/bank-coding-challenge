@@ -8,6 +8,13 @@
       "when": 1737859730564,
       "tag": "0000_stale_mantis",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1738543780823,
+      "tag": "0001_funny_azazel",
+      "breakpoints": true
     }
   ]
 }

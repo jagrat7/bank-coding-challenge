@@ -12,7 +12,7 @@ export default function SummaryMetrics({ statementId }: { statementId: string })
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
       <Card
-        onClick={() => document.getElementById("transaction-history").scrollIntoView({ behavior: "smooth" })}
+        onClick={() => document.getElementById("transaction-history")?.scrollIntoView({ behavior: "smooth" })}
         className="cursor-pointer"
       >
         <CardHeader>
@@ -23,7 +23,7 @@ export default function SummaryMetrics({ statementId }: { statementId: string })
         </CardContent>
       </Card>
       <Card
-        onClick={() => document.getElementById("transaction-history").scrollIntoView({ behavior: "smooth" })}
+        onClick={() => document.getElementById("transaction-history")?.scrollIntoView({ behavior: "smooth" })}
         className="cursor-pointer"
       >
         <CardHeader>
@@ -34,7 +34,7 @@ export default function SummaryMetrics({ statementId }: { statementId: string })
         </CardContent>
       </Card>
       <Card
-        onClick={() => document.getElementById("transaction-history").scrollIntoView({ behavior: "smooth" })}
+        onClick={() => document.getElementById("transaction-history")?.scrollIntoView({ behavior: "smooth" })}
         className="cursor-pointer"
       >
         <CardHeader>

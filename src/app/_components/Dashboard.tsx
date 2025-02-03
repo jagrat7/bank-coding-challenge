@@ -8,6 +8,8 @@ import ExpensesBreakdown from "./ExpensesBreakdown"
 import OutstandingLoans from "./OutstandingLoans"
 import TransactionHistory from "./TransactionHistory"
 import AIInsights from "./AIInsights"
+import { useSession } from "next-auth/react"
+import { redirect } from "next/navigation"
 
 export default function Dashboard({ statementId }: { statementId: string }) {
   return (
