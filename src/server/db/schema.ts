@@ -46,10 +46,77 @@ export const statement = createTable(
     userId: text("user_id", { length: 255 }).notNull(),
     content: text("content").notNull(),
     processStage: text("process_stage", { enum: ['uploaded', 'processing', 'completed', 'failed'] }).default('uploaded').notNull(),
+    processedAt: int("processed_at", { mode: "timestamp" }),
     createdAt: int("created_at", { mode: "timestamp" })
       .default(sql`(unixepoch())`)
       .notNull(),
   },
+);
+
+export const transaction = createTable(
+  "transaction",
+  {
+    id: int("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+    statementId: int("statement_id", { mode: "number" })
+      .notNull()
+      .references(() => statement.id, { onDelete: "cascade" }),
+    date: text("date").notNull(),
+    description: text("description").notNull(),
+    amount: int("amount", { mode: "number" }).notNull(), // Store in cents/smallest currency unit
+    type: text("type", { enum: ['deposit', 'withdrawal'] }).notNull(),
+    createdAt: int("created_at", { mode: "timestamp" })
+      .default(sql`(unixepoch())`)
+      .notNull(),
+  },
+  (table) => ({
+    statementIdIdx: index("statement_id_idx").on(table.statementId),
+    dateIdx: index("date_idx").on(table.date),
+    typeIdx: index("type_idx").on(table.type),
+  }),
+);
+
+export const statementMetrics = createTable(
+  "statement_metrics",
+  {
+    id: int("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+    statementId: int("statement_id", { mode: "number" })
+      .notNull()
+      .references(() => statement.id, { onDelete: "cascade" }),
+    totalDeposits: int("total_deposits", { mode: "number" }).notNull(), // Store in cents
+    totalWithdrawals: int("total_withdrawals", { mode: "number" }).notNull(), // Store in cents
+    balance: int("balance", { mode: "number" }).notNull(), // Store in cents
+    outstandingLoans: int("outstanding_loans", { mode: "number" }).notNull(),
+    periodStart: text("period_start").notNull(),
+    periodEnd: text("period_end").notNull(),
+    createdAt: int("created_at", { mode: "timestamp" })
+      .default(sql`(unixepoch())`)
+      .notNull(),
+  },
+  (table) => ({
+    statementIdIdx: index("metrics_statement_id_idx").on(table.statementId),
+    periodIdx: index("period_idx").on(table.periodStart, table.periodEnd),
+  }),
+);
+
+export const statementInsight = createTable(
+  "statement_insight",
+  {
+    id: int("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+    statementId: int("statement_id", { mode: "number" })
+      .notNull()
+      .references(() => statement.id, { onDelete: "cascade" }),
+    insight: text("insight").notNull(),
+    category: text("category", { 
+      enum: ['stability', 'expense', 'debt', 'ratio', 'recommendation'] 
+    }).notNull(),
+    createdAt: int("created_at", { mode: "timestamp" })
+      .default(sql`(unixepoch())`)
+      .notNull(),
+  },
+  (table) => ({
+    statementIdIdx: index("insight_statement_id_idx").on(table.statementId),
+    categoryIdx: index("category_idx").on(table.category),
+  }),
 );
 
 export const users = createTable("user", {

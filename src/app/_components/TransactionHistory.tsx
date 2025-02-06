@@ -18,7 +18,8 @@ export default function TransactionHistory({ statementId }: { statementId: strin
 
   const [transactions, setTransactions] = useState(initialTransactions)
   const [searchTerm, setSearchTerm] = useState("")
-  const [sortField, setSortField] = useState("date")
+  type SortField = "date" | "id" | "description" | "amount"
+  const [sortField, setSortField] = useState<SortField>("date")
   const [sortDirection, setSortDirection] = useState("asc")
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -28,7 +29,7 @@ export default function TransactionHistory({ statementId }: { statementId: strin
     setTransactions(filtered)
   }
 
-  const handleSort = (field: string) => {
+  const handleSort = (field: SortField) => {
     const direction = field === sortField && sortDirection === "asc" ? "desc" : "asc"
     setSortField(field)
     setSortDirection(direction)
@@ -44,12 +45,13 @@ export default function TransactionHistory({ statementId }: { statementId: strin
     <div className="space-y-4">
       <div className="flex items-center space-x-2">
         <Input placeholder="Search by description" value={searchTerm} onChange={handleSearch} className="max-w-sm" />
-        <Select onValueChange={(value) => handleSort(value)}>
+        <Select onValueChange={(value: SortField) => handleSort(value)}>
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Sort by" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="date">Date</SelectItem>
+            <SelectItem value="id">ID</SelectItem>
             <SelectItem value="description">Description</SelectItem>
             <SelectItem value="amount">Amount</SelectItem>
           </SelectContent>
@@ -59,6 +61,7 @@ export default function TransactionHistory({ statementId }: { statementId: strin
         <TableHeader>
           <TableRow>
             <TableHead>Date</TableHead>
+            <TableHead>ID</TableHead>
             <TableHead>Description</TableHead>
             <TableHead>Amount</TableHead>
           </TableRow>
@@ -67,6 +70,7 @@ export default function TransactionHistory({ statementId }: { statementId: strin
           {transactions.map((transaction) => (
             <TableRow key={transaction.id}>
               <TableCell>{transaction.date}</TableCell>
+              <TableCell>{transaction.id}</TableCell>
               <TableCell>{transaction.description}</TableCell>
               <TableCell>
                 {transaction.amount.toLocaleString("en-US", { style: "currency", currency: "USD" })}
