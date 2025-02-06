@@ -52,7 +52,8 @@ bun dev
 
 Required environment variables:
 - `DATABASE_URL`: Your database connection string
-- `NEXTAUTH_URL`: Your application URL
 - `NEXTAUTH_SECRET`: Secret for NextAuth.js
 - `OPENROUTER_API_KEY`: API key for OpenRouter AI services
+- `AUTH_DISCORD_ID`: Discord application client ID
+- `AUTH_DISCORD_SECRET`: Discord application client secret
 
