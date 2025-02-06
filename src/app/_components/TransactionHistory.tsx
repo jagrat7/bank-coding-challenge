@@ -5,6 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~
 import { Input } from "~/app/_components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/app/_components/ui/select"
 import { Button } from "~/app/_components/ui/button"
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "~/app/_components/ui/pagination"
 import { type StatementDetails } from "../dashboard/_actions/get-statement-details"
 
 export default function TransactionHistory({ statement }: { statement: StatementDetails }) {
@@ -23,12 +24,16 @@ export default function TransactionHistory({ statement }: { statement: Statement
   type SortField = "date" | "id" | "description" | "amount"
   const [sortField, setSortField] = useState<SortField>("date")
   const [sortDirection, setSortDirection] = useState("asc")
+  const [page, setPage] = useState(1)
+  const itemsPerPage = 7
+  const totalPages = Math.ceil(transactions.length / itemsPerPage)
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     const term = event.target.value.toLowerCase()
     setSearchTerm(term)
     const filtered = initialTransactions.filter((transaction) => transaction.description.toLowerCase().includes(term))
     setTransactions(filtered)
+    setPage(1)
   }
 
   const handleSort = (field: SortField) => {
@@ -41,6 +46,7 @@ export default function TransactionHistory({ statement }: { statement: Statement
       return 0
     })
     setTransactions(sorted)
+    setPage(1)
   }
 
   return (
@@ -69,18 +75,52 @@ export default function TransactionHistory({ statement }: { statement: Statement
           </TableRow>
         </TableHeader>
         <TableBody>
-          {transactions.map((transaction) => (
-            <TableRow key={transaction.id}>
-              <TableCell>{transaction.date}</TableCell>
-              <TableCell>{transaction.id}</TableCell>
-              <TableCell>{transaction.description}</TableCell>
-              <TableCell>
-                {transaction.amount.toLocaleString("en-US", { style: "currency", currency: "USD" })}
-              </TableCell>
-            </TableRow>
-          ))}
+          {transactions
+            .slice((page - 1) * itemsPerPage, page * itemsPerPage)
+            .map((transaction) => (
+              <TableRow key={transaction.id}>
+                <TableCell>{transaction.date}</TableCell>
+                <TableCell>{transaction.id}</TableCell>
+                <TableCell>{transaction.description}</TableCell>
+                <TableCell>
+                  {transaction.amount.toLocaleString("en-US", { style: "currency", currency: "USD" })}
+                </TableCell>
+              </TableRow>
+            ))}
         </TableBody>
       </Table>
+
+      <div className="flex items-center justify-between">
+        <div className="text-sm text-muted-foreground">
+          Page {page} of {totalPages}
+        </div>
+        <Pagination>
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious 
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                className={page <= 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+              />
+            </PaginationItem>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
+              <PaginationItem key={pageNum}>
+                <PaginationLink 
+                  onClick={() => setPage(pageNum)}
+                  isActive={page === pageNum}
+                >
+                  {pageNum}
+                </PaginationLink>
+              </PaginationItem>
+            ))}
+            <PaginationItem>
+              <PaginationNext 
+                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                className={page >= totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
+      </div>
     </div>
   )
 }
