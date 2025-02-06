@@ -45,13 +45,15 @@ export const StatementUploader = () => {
         toast.error("Failed to create statement")
         setUploadStage(null)
       } else {
+
+        
         setUploadStage("processing")
         const processResponse = await processStatement(response.id)
         setUploadStage("completed")
         
         // Redirect to details page after a short delay
         setTimeout(() => {
-          router.push(`/dashboard/${processResponse.data.id}`)
+          router.push(`/dashboard/${processResponse?.data?.id}`)
         }, 1000)
       }
     } catch (e) {

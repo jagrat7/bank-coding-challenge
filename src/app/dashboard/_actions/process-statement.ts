@@ -1,6 +1,6 @@
 'use server'
 
-import { createOpenRouter } from "@openrouter/ai-sdk-provider"
+import { createOpenRouter, openrouter } from "@openrouter/ai-sdk-provider"
 import { generateText } from "ai"
 import { revalidatePath } from "next/cache"
 import { env } from "~/env"
@@ -29,69 +29,16 @@ export async function processStatement(statementId: number) {
       .set({ processStage: "processing" })
       .where(eq(statement.id, statementId))
 
-    // Initialize OpenRouter
-    const openrouter = createOpenRouter({
-      apiKey: env.OPENROUTER_API_KEY,
-    })
-
-    // Process statement content using AI
-    const prompt = `
-      Analyze this bank statement content and extract financial information in the following JSON format:
-      {
-        "transactions": [
-          {
-            "id": number,
-            "date": "YYYY-MM-DD",
-            "description": string,
-            "amount": number (positive for deposits, negative for withdrawals)
-          }
-        ],
-        "metrics": {
-          "totalDeposits": number,
-          "totalWithdrawals": number,
-          "balance": number,
-          "outstandingLoans": number
-        }
-      }
-
-      Statement Content:
-      ${statementRecord.content}
-
-      Return only valid JSON, no additional text.
-    `
-
-    const { text: processedData } = await generateText({
-      model: openrouter.chat("anthropic/claude-3.5-sonnet:beta"),
-      prompt,
-    })
-
+    // Since processing is now done in the upload route,
+    // we just need to return the statement data
+    const [transactions, metrics] = await Promise.all([
+      db.select().from(transaction).where(eq(transaction.statementId, statementId)),
+      db.select().from(statementMetrics).where(eq(statementMetrics.statementId, statementId)).get()
+    ])
     try {
-      // Validate the response is valid JSON
-      const parsedData = JSON.parse(processedData)
-      console.log("Parsed RAW data:", parsedData)
-      // Store transactions
-      await db.insert(transaction).values(
-        parsedData.transactions.map((t: any) => ({
-          statementId,
-          date: t.date,
-          description: t.description,
-          amount: t.amount,
-          type: t.amount > 0 ? 'deposit' : 'withdrawal',
-        }))
-      )
-
-      console.log("Stored transactions:", parsedData.transactions)
-      // Store metrics
-      await db.insert(statementMetrics).values({
-        statementId,
-        totalDeposits: parsedData.metrics.totalDeposits,
-        totalWithdrawals: Math.abs(parsedData.metrics.totalWithdrawals),
-        balance: parsedData.metrics.balance,
-        outstandingLoans: parsedData.metrics.outstandingLoans,
-        periodStart: parsedData.transactions[0]?.date || new Date().toISOString().split('T')[0],
-        periodEnd: parsedData.transactions[parsedData.transactions.length - 1]?.date || new Date().toISOString().split('T')[0],
-      })
-      console.log("Stored metrics:", parsedData.metrics)
+      
+    console.log("Retrieved transactions:", transactions)
+    console.log("Retrieved metrics:", metrics)
       // Generate insights using DeepSeek
       const insightPrompt = `
         Analyze this financial data and provide 5 key business insights. Format each insight as JSON:
@@ -105,12 +52,12 @@ export async function processStatement(statementId: number) {
         }
 
         Financial Data:
-        1. Transactions: ${JSON.stringify(parsedData.transactions)}
+        1. Transactions: ${JSON.stringify(transactions)}
         2. Metrics:
-           - Total Deposits: ${parsedData.metrics.totalDeposits}
-           - Total Withdrawals: ${parsedData.metrics.totalWithdrawals}
-           - Current Balance: ${parsedData.metrics.balance}
-           - Outstanding Loans: ${parsedData.metrics.outstandingLoans}
+           - Total Deposits: ${metrics?.totalDeposits}
+           - Total Withdrawals: ${metrics?.totalWithdrawals}
+           - Current Balance: ${metrics?.balance}
+           - Outstanding Loans: ${metrics?.outstandingLoans}
 
         Focus on:
         - Revenue stability and patterns
@@ -161,7 +108,7 @@ export async function processStatement(statementId: number) {
         })
         .where(eq(statement.id, statementId))
       
-      return { success: true, data: { ...parsedData, insights: parsedInsights.insights, id: statementId } }
+      return { success: true, data: { transactions, metrics, parsedInsights, id: statementId } }
     } catch (error) {
       // Update statement with failed stage
       await db
