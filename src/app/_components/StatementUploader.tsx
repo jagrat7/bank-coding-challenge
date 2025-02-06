@@ -5,38 +5,61 @@ import { Upload } from "lucide-react"
 import { v4 as uuidv4 } from "uuid"
 import { FilePond } from "react-filepond"
 import { toast } from "sonner"
+import { useRouter } from "next/navigation"
 import { LoadingButton } from "./LoadingButton"
 import { Input } from "./ui/input"
+import { processStatement } from "../dashboard/_actions/process-statement"
+import { UploadModal, type Stage } from "./UploadModal"
 
 export const StatementUploader = () => {
+  const router = useRouter()
   const pondRef = useRef<FilePond>(null)
   const [isFileUploading, setIsFileUploading] = useState(false)
+  const [uploadStage, setUploadStage] = useState<Stage | null>(null)
 
-  const handleFinishFileUpload = (error: any, file: any) => {
-    setIsFileUploading(false)
-
+  const handleFinishFileUpload = async (error: any, file: any) => {
     try {
       if (error) {
         const serverResponse = error.serverResponse || error.body
         const serverError = serverResponse ? JSON.parse(serverResponse) : null
         toast.error(serverError?.error || "File upload failed")
+        setUploadStage(null)
+        setIsFileUploading(false)
         return
       }
 
       if (!file?.serverId) {
         toast.error("Received empty response from server")
+        setUploadStage(null)
+        setIsFileUploading(false)
         return
       }
 
       const response = JSON.parse(file.serverId)
+      console.log("Response:", response);
+      
       if (response.error) {
         toast.error(response.error)
+        setUploadStage(null)
+      } else if (response.id === -1) {
+        toast.error("Failed to create statement")
+        setUploadStage(null)
       } else {
-        toast.success("File uploaded successfully")
+        setUploadStage("processing")
+        const processResponse = await processStatement(response.id)
+        setUploadStage("completed")
+        
+        // Redirect to details page after a short delay
+        setTimeout(() => {
+          router.push(`/dashboard/statements/${processResponse.data.id}`)
+        }, 1000)
       }
     } catch (e) {
       console.error("Error processing response:", e)
       toast.error("Failed to process server response")
+      setUploadStage(null)
+    } finally {
+      setIsFileUploading(false)
     }
   }
   
@@ -47,16 +70,6 @@ export const StatementUploader = () => {
   return (
     <div className="w-full space-y-4">
       <div className="flex w-full gap-2">
-        {/* <Input
-          type="file"
-          accept=".pdf"
-          onClick={(e) => {
-            e.preventDefault()
-            pondRef.current?.browse()
-          }}
-          className="max-w-sm"
-          id="file-upload"
-        /> */}
         <LoadingButton
           type="button"
           isLoading={isFileUploading}
@@ -69,8 +82,8 @@ export const StatementUploader = () => {
         </LoadingButton>
         <FilePond
           ref={pondRef}
-          allowMultiple={true}
-          maxParallelUploads={10}
+          allowMultiple={false}
+          maxParallelUploads={1}
           acceptedFileTypes={["application/pdf"]}
           server={{
             process: "/api/upload",
@@ -78,11 +91,27 @@ export const StatementUploader = () => {
             revert: null,
           }}
           onprocessfile={handleFinishFileUpload}
-          onprocessfileabort={() => setIsFileUploading(false)}
-          onaddfilestart={() => setIsFileUploading(true)}
+          onprocessfileabort={() => {
+            setIsFileUploading(false)
+            setUploadStage(null)
+          }}
+          onaddfilestart={() => {
+            setIsFileUploading(true)
+            setUploadStage("uploading")
+          }}
           className="hidden"
         />
       </div>
+
+      <UploadModal 
+        isOpen={uploadStage !== null}
+        stage={uploadStage || "uploading"}
+        onClose={() => {
+          if (uploadStage === "completed") {
+            setUploadStage(null)
+          }
+        }}
+      />
     </div>
   )
 }

@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
+import { getStatements, type Statement } from "./_actions/get-statements"
 import Link from "next/link"
 import { Button } from "~/app/_components/ui/button"
 import { Input } from "~/app/_components/ui/input"
@@ -9,40 +10,11 @@ import { Upload, Search, ArrowUpDown } from "lucide-react"
 import { StatementUploader } from "../_components/StatementUploader"
 
 export default function StatementListPage() {
-  const [statements, setStatements] = useState([
-    {
-      id: 1,
-      name: "January 2023",
-      uploadDate: "2023-02-01",
-      totalDeposits: 50000,
-      totalWithdrawals: 45000,
-      balance: 5000,
-    },
-    {
-      id: 2,
-      name: "February 2023",
-      uploadDate: "2023-03-01",
-      totalDeposits: 55000,
-      totalWithdrawals: 48000,
-      balance: 7000,
-    },
-    {
-      id: 3,
-      name: "March 2023",
-      uploadDate: "2023-04-01",
-      totalDeposits: 60000,
-      totalWithdrawals: 52000,
-      balance: 8000,
-    },
-    {
-      id: 4,
-      name: "April 2023",
-      uploadDate: "2023-05-01",
-      totalDeposits: 58000,
-      totalWithdrawals: 50000,
-      balance: 8000,
-    },
-  ])
+  const [statements, setStatements] = useState<Statement[]>([])  
+
+  useEffect(() => {
+    getStatements().then(setStatements)
+  }, [])
 
   const [searchTerm, setSearchTerm] = useState("")
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc")

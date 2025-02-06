@@ -68,7 +68,7 @@ export async function processStatement(statementId: number) {
     try {
       // Validate the response is valid JSON
       const parsedData = JSON.parse(processedData)
-
+      console.log("Parsed RAW data:", parsedData)
       // Store transactions
       await db.insert(transaction).values(
         parsedData.transactions.map((t: any) => ({
@@ -80,6 +80,7 @@ export async function processStatement(statementId: number) {
         }))
       )
 
+      console.log("Stored transactions:", parsedData.transactions)
       // Store metrics
       await db.insert(statementMetrics).values({
         statementId,
@@ -90,7 +91,7 @@ export async function processStatement(statementId: number) {
         periodStart: parsedData.transactions[0]?.date || new Date().toISOString().split('T')[0],
         periodEnd: parsedData.transactions[parsedData.transactions.length - 1]?.date || new Date().toISOString().split('T')[0],
       })
-
+      console.log("Stored metrics:", parsedData.metrics)
       // Generate insights using DeepSeek
       const insightPrompt = `
         Analyze this financial data and provide 5 key business insights. Format each insight as JSON:
@@ -125,9 +126,23 @@ export async function processStatement(statementId: number) {
         model: openrouter.chat("deepseek/deepseek-r1-distill-qwen-14b"),
         prompt: insightPrompt,
       })
+      console.log("Sending prompt to AI:", insightPrompt)
+      console.log("AI response:", insightData)
 
-      const parsedInsights = JSON.parse(insightData)
+      // Clean the insights response
+      const jsonStart = insightData.indexOf('{')
+      const jsonEnd = insightData.lastIndexOf('}')
+      
+      if (jsonStart === -1 || jsonEnd === -1) {
+        console.error("No JSON found in insights response")
+        throw new Error("Invalid insights format")
+      }
 
+      const cleanInsightJson = insightData.slice(jsonStart, jsonEnd + 1)
+      console.log("Cleaned insights JSON:", cleanInsightJson)
+      
+      const parsedInsights = JSON.parse(cleanInsightJson)
+      console.log("Parsed insights:", parsedInsights)
       // Store insights
       await db.insert(statementInsight).values(
         parsedInsights.insights.map((i: any) => ({
@@ -136,7 +151,7 @@ export async function processStatement(statementId: number) {
           category: i.category,
         }))
       )
-
+      console.log("Stored insights:", parsedInsights.insights)
       // Update statement status
       await db
         .update(statement)
@@ -146,7 +161,7 @@ export async function processStatement(statementId: number) {
         })
         .where(eq(statement.id, statementId))
       
-      return { success: true, data: { ...parsedData, insights: parsedInsights.insights } }
+      return { success: true, data: { ...parsedData, insights: parsedInsights.insights, id: statementId } }
     } catch (error) {
       // Update statement with failed stage
       await db

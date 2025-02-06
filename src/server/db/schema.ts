@@ -42,7 +42,7 @@ export type ProcessStage = 'uploaded' | 'processing' | 'completed' | 'failed'
 export const statement = createTable(
   "statement",
   {
-    id: int("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+    id: int("id", { mode: "number" }).primaryKey({ autoIncrement: true }).notNull(),
     userId: text("user_id", { length: 255 }).notNull(),
     content: text("content").notNull(),
     processStage: text("process_stage", { enum: ['uploaded', 'processing', 'completed', 'failed'] }).default('uploaded').notNull(),

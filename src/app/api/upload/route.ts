@@ -33,6 +33,7 @@ export async function POST(req: NextRequest) {
         if (!result.content || result.error) {
           return NextResponse.json({ error: result.error || 'Empty PDF content' }, { status: 500 });
         }
+        console.log("PDF content:", result.content)
         const session = await auth()
         if (!session) {
           return NextResponse.json({ error: 'User not authenticated' }, { status: 401 });
@@ -41,8 +42,11 @@ export async function POST(req: NextRequest) {
         if (!userId) {
           return NextResponse.json({ error: 'User not authenticated' }, { status: 401 });
         }
-        await createStatement(result.content, userId)
-        return NextResponse.json({ text: result.content });
+        const newStatement = await createStatement(result.content, userId)
+        if (newStatement?.id === undefined) {
+          return NextResponse.json({ text: result.content, id: -1 }, { status: 200 });
+        }
+        return NextResponse.json({ text: result.content, id: newStatement.id }, { status: 200 });
       } catch (error: any) {
         console.error('Error processing file:', error);
         return NextResponse.json({ error: error.message || 'Failed to process file' }, { status: 500 });
