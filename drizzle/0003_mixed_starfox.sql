@@ -1,0 +1,1 @@
+ALTER TABLE `bank-coding-challange_statement` ADD `name` text(255) NOT NULL;

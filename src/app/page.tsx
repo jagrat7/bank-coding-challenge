@@ -1,4 +1,4 @@
-import { GalleryVerticalEnd } from "lucide-react";
+import { GalleryVerticalEnd, Link } from "lucide-react";
 import { auth } from "~/server/auth";
 import { LoginForm } from "./_components/LoginForm";
 import { redirect } from "next/navigation";
@@ -16,7 +16,7 @@ export default async function Home() {
               <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
                 <GalleryVerticalEnd className="size-4" />
               </div>
-              Banking Company Inc.
+              <Link href="/dashboard">Banking Company Inc.</Link>
             </a>
             <LoginForm />
           </div>

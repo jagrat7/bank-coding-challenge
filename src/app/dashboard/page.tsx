@@ -10,7 +10,7 @@ import { Upload, Search, ArrowUpDown } from "lucide-react"
 import { StatementUploader } from "../_components/StatementUploader"
 
 export default function StatementListPage() {
-  const [statements, setStatements] = useState<Statement[]>([])  
+  const [statements, setStatements] = useState<Statement[]>([])
 
   useEffect(() => {
     getStatements().then(setStatements)

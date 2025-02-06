@@ -20,6 +20,7 @@ export async function POST(req: NextRequest) {
     console.log('Uploaded file:', uploadedFile);
 
     if (uploadedFile instanceof File) {
+      const filename = uploadedFile.name.replace(/\.[^/.]+$/, '') // Remove extension
       try {
         const result = await parsePDFFile(uploadedFile);
         if (!result.content?.trim()) {
@@ -42,7 +43,7 @@ export async function POST(req: NextRequest) {
         if (!userId) {
           return NextResponse.json({ error: 'User not authenticated' }, { status: 401 });
         }
-        const newStatement = await createStatement(result.content, userId)
+        const newStatement = await createStatement(result.content, userId, filename)
         if (newStatement?.id === undefined) {
           return NextResponse.json({ text: result.content, id: -1 }, { status: 200 });
         }
@@ -97,10 +98,11 @@ async function parsePDFFile(file: File): Promise<ParseResult> {
   }
 }
 
-async function createStatement(text: string, userId: string) {
+async function createStatement(text: string, userId: string, filename: string) {
   try {
     const [newStatement] = await db.insert(statement).values({
       userId,
+      name: filename,
       content: text,
       processStage: 'uploaded'
     }).returning()

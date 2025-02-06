@@ -27,7 +27,7 @@ export async function getStatements(): Promise<Statement[]> {
 
   return statements.map(s => ({
     id: s.statement.id,
-    name: `Statement ${new Date(s.statement.createdAt).toLocaleDateString()}`,
+    name: s.statement.name ?? 'untitled',
     uploadDate: new Date(s.statement.createdAt).toISOString().split('T')[0] || '',
     totalDeposits: Number(s.statement_metrics?.totalDeposits || 0) / 100,
     totalWithdrawals: Number(s.statement_metrics?.totalWithdrawals || 0) / 100,

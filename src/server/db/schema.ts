@@ -44,6 +44,7 @@ export const statement = createTable(
   {
     id: int("id", { mode: "number" }).primaryKey({ autoIncrement: true }).notNull(),
     userId: text("user_id", { length: 255 }).notNull(),
+    name: text("name", { length: 255 }),
     content: text("content").notNull(),
     processStage: text("process_stage", { enum: ['uploaded', 'processing', 'completed', 'failed'] }).default('uploaded').notNull(),
     processedAt: int("processed_at", { mode: "timestamp" }),

@@ -22,6 +22,13 @@
       "when": 1738824167827,
       "tag": "0002_milky_surge",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1738833400426,
+      "tag": "0003_mixed_starfox",
+      "breakpoints": true
     }
   ]
 }
