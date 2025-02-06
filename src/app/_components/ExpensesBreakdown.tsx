@@ -17,11 +17,19 @@ export default function ExpensesBreakdown({ statement }: { statement: StatementD
       return acc
     }, {} as Record<string, number>)
 
-  const data = Object.entries(expensesByCategory)
+  const sortedExpenses = Object.entries(expensesByCategory)
     .map(([name, value]) => ({ name, value }))
     .sort((a, b) => b.value - a.value)
 
-  const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"]
+  const data = sortedExpenses.length <= 5 ? sortedExpenses : [
+    ...sortedExpenses.slice(0, 4),
+    {
+      name: 'Others',
+      value: sortedExpenses.slice(5).reduce((sum, item) => sum + item.value, 0)
+    }
+  ]
+
+  const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042",, "#AA8042"]
 
   return (
     <ResponsiveContainer width="100%" height={300}>

@@ -51,7 +51,7 @@ export const StatementUploader = () => {
         
         // Redirect to details page after a short delay
         setTimeout(() => {
-          router.push(`/dashboard/${processResponse.data.id}`)
+          router.push(`/dashboard/${processResponse?.data.id}`)
         }, 1000)
       }
     } catch (e) {

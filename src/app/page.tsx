@@ -16,7 +16,7 @@ export default async function Home() {
               <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
                 <GalleryVerticalEnd className="size-4" />
               </div>
-              <Link href="/dashboard">Banking Company Inc.</Link>
+              <h1 >Banking Company Inc.</h1>
             </a>
             <LoginForm />
           </div>

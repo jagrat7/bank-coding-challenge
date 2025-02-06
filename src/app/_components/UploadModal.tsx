@@ -48,9 +48,7 @@ export function UploadModal({ isOpen, stage, onClose }: UploadModalProps) {
       <DialogContent className="sm:max-w-md">
         <DialogTitle className="text-lg font-medium">Statement Upload Progress</DialogTitle>
         <div className="space-y-6 py-6">
-          <div className="space-y-2">
-            <Progress value={progress} className="h-2" />
-          </div>
+
           <div className="space-y-4">
             {stages.map((s, index) => {
               const isActive = index === currentStageIndex

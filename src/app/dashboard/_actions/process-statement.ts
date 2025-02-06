@@ -61,13 +61,22 @@ export async function processStatement(statementId: number) {
     `
 
     const { text: processedData } = await generateText({
-      model: openrouter.chat("anthropic/claude-3.5-sonnet:beta"),
+      model: openrouter.chat("openai/gpt-4-turbo-preview"),
       prompt,
     })
 
     try {
-      // Validate the response is valid JSON
-      const parsedData = JSON.parse(processedData)
+      // Clean and validate the response
+      const cleanedData = processedData
+        .replace(/^```(?:json)?\s*/, '')  // Remove opening ```json with any whitespace
+        .replace(/\s*```\s*$/, '')       // Remove closing ``` with any whitespace
+        .replace(/```/g, '')              // Remove any remaining ``` anywhere
+        .trim()
+      
+      console.log("Processed data:", processedData)
+      console.log("Cleaned data:", cleanedData)
+      
+      const parsedData = JSON.parse(cleanedData)
       console.log("Parsed RAW data:", parsedData)
       // Store transactions
       await db.insert(transaction).values(
@@ -169,7 +178,6 @@ export async function processStatement(statementId: number) {
         .set({ processStage: "failed" })
         .where(eq(statement.id, statementId))
 
-      throw new Error("Failed to parse AI response")
     }
   } catch (error) {
     console.error("Error processing statement:", error)
