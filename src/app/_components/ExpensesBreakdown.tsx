@@ -1,13 +1,25 @@
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts"
+"use client"
 
-export default function ExpensesBreakdown({ statementId }: { statementId: string }) {
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts"
+import { type StatementDetails } from "../dashboard/_actions/get-statement-details"
+
+export default function ExpensesBreakdown({ statement }: { statement: StatementDetails }) {
   // In a real application, you would fetch this data based on the statement
-  const data = [
-    { name: "Rent", value: 2000 },
-    { name: "Salaries", value: 5000 },
-    { name: "Utilities", value: 1000 },
-    { name: "Supplies", value: 500 },
-  ]
+  // Group withdrawals by description
+  const expensesByCategory = statement.transactions
+    .filter(t => t.type === 'withdrawal')
+    .reduce((acc, t) => {
+      const category = t.description
+      if (!acc[category]) {
+        acc[category] = 0
+      }
+      acc[category] += Math.abs(t.amount)
+      return acc
+    }, {} as Record<string, number>)
+
+  const data = Object.entries(expensesByCategory)
+    .map(([name, value]) => ({ name, value }))
+    .sort((a, b) => b.value - a.value)
 
   const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"]
 

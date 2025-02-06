@@ -99,6 +99,26 @@ export const statementMetrics = createTable(
   }),
 );
 
+export const loan = createTable(
+  "loan",
+  {
+    id: int("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+    statementId: int("statement_id", { mode: "number" })
+      .notNull()
+      .references(() => statement.id, { onDelete: "cascade" }),
+    type: text("type").notNull(),
+    amount: int("amount", { mode: "number" }).notNull(), // Store in cents
+    interestRate: int("interest_rate", { mode: "number" }).notNull(), // Store as basis points (e.g. 500 = 5%)
+    remainingBalance: int("remaining_balance", { mode: "number" }).notNull(), // Store in cents
+    createdAt: int("created_at", { mode: "timestamp" })
+      .default(sql`(unixepoch())`)
+      .notNull(),
+  },
+  (table) => ({
+    statementIdIdx: index("loan_statement_id_idx").on(table.statementId),
+  }),
+);
+
 export const statementInsight = createTable(
   "statement_insight",
   {

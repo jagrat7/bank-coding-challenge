@@ -1,15 +1,34 @@
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts"
+"use client"
 
-export default function MonthlyChart({ statementId }: { statementId: string }) {
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts"
+import { type StatementDetails } from "../dashboard/_actions/get-statement-details"
+
+export default function MonthlyChart({ statement }: { statement: StatementDetails }) {
   // In a real application, you would fetch this data based on the statementId
-  const data = [
-    { name: "Jan", deposits: 4000, withdrawals: 2400 },
-    { name: "Feb", deposits: 3000, withdrawals: 1398 },
-    { name: "Mar", deposits: 2000, withdrawals: 9800 },
-    { name: "Apr", deposits: 2780, withdrawals: 3908 },
-    { name: "May", deposits: 1890, withdrawals: 4800 },
-    { name: "Jun", deposits: 2390, withdrawals: 3800 },
-  ]
+  // Group transactions by month
+  const monthlyData = statement.transactions.reduce((acc, t) => {
+    const month = new Date(t.date).toLocaleString('default', { month: 'short' })
+    if (!acc[month]) {
+      acc[month] = { deposits: 0, withdrawals: 0 }
+    }
+    if (t.type === 'deposit') {
+      acc[month].deposits += t.amount
+    } else {
+      acc[month].withdrawals += Math.abs(t.amount)
+    }
+    return acc
+  }, {} as Record<string, { deposits: number, withdrawals: number }>)
+
+  const data = Object.entries(monthlyData)
+    .map(([name, values]) => ({
+      name,
+      deposits: values.deposits,
+      withdrawals: values.withdrawals
+    }))
+    .sort((a, b) => {
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+      return months.indexOf(a.name) - months.indexOf(b.name)
+    })
 
   return (
     <ResponsiveContainer width="100%" height={300}>

@@ -5,16 +5,18 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~
 import { Input } from "~/app/_components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/app/_components/ui/select"
 import { Button } from "~/app/_components/ui/button"
+import { type StatementDetails } from "../dashboard/_actions/get-statement-details"
 
-export default function TransactionHistory({ statementId }: { statementId: string }) {
+export default function TransactionHistory({ statement }: { statement: StatementDetails }) {
   // In a real application, you would fetch this data based on the statementId
-  const initialTransactions = [
-    { id: 1, date: "2023-06-01", description: "Deposit", amount: 5000 },
-    { id: 2, date: "2023-06-02", description: "Rent Payment", amount: -2000 },
-    { id: 3, date: "2023-06-03", description: "Utility Bill", amount: -200 },
-    { id: 4, date: "2023-06-04", description: "Sales Revenue", amount: 3000 },
-    { id: 5, date: "2023-06-05", description: "Employee Salary", amount: -4000 },
-  ]
+  const formatCurrency = (amount: number) => amount.toLocaleString('en-US', { style: 'currency', currency: 'USD' })
+
+  const initialTransactions = statement.transactions.map(t => ({
+    id: t.id,
+    date: t.date,
+    description: t.description,
+    amount: t.amount
+  }))
 
   const [transactions, setTransactions] = useState(initialTransactions)
   const [searchTerm, setSearchTerm] = useState("")

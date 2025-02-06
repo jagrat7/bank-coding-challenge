@@ -1,15 +1,12 @@
+"use client"
+
 import { Alert, AlertDescription, AlertTitle } from "~/app/_components/ui/alert"
 import { AlertCircle } from "lucide-react"
+import { type StatementDetails } from "../dashboard/_actions/get-statement-details"
 
-export default function AIInsights({ statementId }: { statementId: string }) {
+export default function AIInsights({ statement }: { statement: StatementDetails }) {
   // In a real application, you would generate these insights using an AI model and statementId
-  const insights = [
-    "The business shows consistent monthly revenue, indicating stability.",
-    "Major expenses are well-managed and within industry norms.",
-    "There are two outstanding loans, but payments are being made regularly.",
-    "The current ratio (current assets / current liabilities) is healthy at 1.5.",
-    "Recommendation: This business appears to be a good candidate for a loan, given their financial stability and responsible management of existing debts.",
-  ]
+  const insights = statement.insights
 
   return (
     <div className="space-y-4">

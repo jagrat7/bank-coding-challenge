@@ -1,12 +1,17 @@
-import { Card, CardContent, CardHeader, CardTitle } from "~/app/_components/ui/card"
+"use client"
 
-export default function SummaryMetrics({ statementId }: { statementId: string }) {
+import { Card, CardContent, CardHeader, CardTitle } from "~/app/_components/ui/card"
+import { type StatementDetails } from "../dashboard/_actions/get-statement-details"
+
+export default function SummaryMetrics({ statement }: { statement: StatementDetails }) {
   // In a real application, you would fetch this data based on the statementId
+  const formatCurrency = (amount: number) => amount.toLocaleString('en-US', { style: 'currency', currency: 'USD' })
+
   const metrics = {
-    totalDeposits: "$50,000",
-    totalWithdrawals: "$45,000",
-    balance: "$5,000",
-    outstandingLoans: "2",
+    totalDeposits: formatCurrency(statement.metrics.totalDeposits),
+    totalWithdrawals: formatCurrency(statement.metrics.totalWithdrawals),
+    balance: formatCurrency(statement.metrics.balance),
+    outstandingLoans: statement.metrics.outstandingLoans.toString()
   }
 
   return (
